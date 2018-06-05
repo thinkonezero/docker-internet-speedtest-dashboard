@@ -13,28 +13,27 @@ services:
     volumes:
       - './influxdb:/var/lib/influxdb'
 
-  grafana:
-    image: grafana/grafana 
-    container_name: grafana
+  chronograf:
+    image: chronograf 
+    container_name: chronograf
     restart: unless-stopped
     network_mode: 'bridge'
     ports:
-      - '3000:3000'
+      - '8888:8888'
     environment:
-      - GF_SERVER_ROOT_URL=http://localhost
-      - GF_SECURITY_ADMIN_PASSWORD=testing
+      - INFLUXDB_URL=http://db:8086
     volumes:
-      - './grafana:/var/lib/grafana'
+      - './chronograf:/var/lib/chronograf'
     links:
       - influxdb:db
     depends_on:
       - influxdb
 
   speedtest:
-    image: pedrocesarti/internet-speedtest-docker:speedtest
+    image: phikai/speedtest
     container_name: speedtest
     restart: unless-stopped
-    network_mode: 'host'
+    network_mode: 'bridge'
     environment:
       - TEST_INTERVAL=5
     links:
