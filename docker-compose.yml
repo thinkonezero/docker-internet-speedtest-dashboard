@@ -4,6 +4,8 @@ services:
   influxdb:
     image: influxdb 
     container_name: influxdb
+    restart: unless-stopped
+    network_mode: 'bridge'
     ports:
       - '8086:8086'
     environment:
@@ -12,20 +14,30 @@ services:
       - './influxdb:/var/lib/influxdb'
 
   grafana:
-    image: pedrocesarti/internet-speedtest-docker:grafana 
+    image: grafana/grafana 
     container_name: grafana
+    restart: unless-stopped
+    network_mode: 'bridge'
     ports:
       - '3000:3000'
     environment:
       - GF_SERVER_ROOT_URL=http://localhost
       - GF_SECURITY_ADMIN_PASSWORD=testing
+    volumes:
+      - './grafana:/var/lib/grafana'
     links:
       - influxdb:db
+    depends_on:
+      - influxdb
 
   speedtest:
     image: pedrocesarti/internet-speedtest-docker:speedtest
     container_name: speedtest
+    restart: unless-stopped
+    network_mode: 'host'
     environment:
       - TEST_INTERVAL=5
     links:
       - influxdb:db
+    depends_on:
+      - influxdb
