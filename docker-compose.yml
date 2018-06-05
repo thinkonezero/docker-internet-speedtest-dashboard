@@ -4,30 +4,30 @@ services:
   influxdb:
     image: influxdb 
     container_name: influxdb
-    volumes:
-      - "./influxdb/:/var/lib/influxdb"
     ports:
-      - "8086:8086"
+      - '8086:8086'
     environment:
-      - INFLUXDB_ADMIN_USER="admin"
-      - INFLUXDB_ADMIN_PASSWORD="password"
-      - INFLUXDB_DB="speedtest"
+      - INFLUXDB_DB=speedtest
+    volumes:
+      - './influxdb/:/var/lib/influxdb'
 
   grafana:
-    image: pedrocesarti/internet-speedtest-docker:grafana 
+    image: grafana/grafana 
     container_name: grafana
     ports:
-      - "3000:3000"
-    links:
-      - influxdb:db
+      - '3000:3000'
     environment:
       - GF_SERVER_ROOT_URL=http://localhost
-      - GF_SECURITY_ADMIN_PASSWORD=teste
+      - GF_SECURITY_ADMIN_PASSWORD=testing
+    volumes:
+      - './grafana/:/var/lib/grafana'
+    links:
+      - influxdb:db
 
   speedtest:
     image: pedrocesarti/internet-speedtest-docker:speedtest
     container_name: speedtest
-    links:
-      - influxdb:db
     environment:
       - TEST_INTERVAL=5
+    links:
+      - influxdb:db
