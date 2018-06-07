@@ -1,83 +1,119 @@
-# internet-speedtest-docker
+# Internet Speedtest Dashboard
 
-__**Spoiler Alert**__
+This project is designed to provide you an easy dashboard for consistently monitoring the speed of your Internet connection. It won't help you diagnose any issues, or notify anyone of issues, it's purely designed to provide historical reporting. It was also built as a standalone piece to integrate with my [Docker based HTPC Standup](https://github.com/phikai/htpc-docker-standup).
 
-This project won't help you with your connection, actually this project born when I need to monitoring the speed of my Internet, create a report to send to my ISP, so they can take some action. Using **Docker Compose** I put together three containers with the tools needed to monitoring and display the status of your Internet (and I know that tool can do more or can be better).
+Huge thanks to [Pedro Azevedo](https://github.com/pedrocesar-ti) for his [Speedtest Dashboard](https://github.com/pedrocesar-ti/internet-speedtest-docker) project which was the base for this project.
 
-Here in Brazil is a mess to contract a good ISP, they just don't deliver the speed they should for the users. Generally in a small business or a residence you can't pay for a very expensive plans where they certify the bandwidth delivered. So you have to call them many times complaining about the speed of your internet connection and always they will ask you to do that Internet Tests Online, such as [SpeedTest](http://www.speedtest.net), [AT&T SpeedTest](http://www.att.com/speedtest/), [TestMyNet](http://testmy.net), most of these tests are based only on ICMP messages that don't reflect your real bandwidth at that time. Or even worse your ISP can allow all trafic ICMP so when you test it appears that you have a good speed but when you have to download some content you can't do it that well. There is much more to talk about it but I don't wanna spend so much time talking about the things that are wrong here.
+![Speedtest Dashboard](dashboard.png)
 
-<p align="center"><img src="https://dl.dropboxusercontent.com/s/l0py4zgi5izcbgw/Screen%20Shot%202017-02-27%20at%2023.55.16.png"Grafana"></p>
-
-## Running container
-The only requirement to run this compose is have Docker Compose installed, if you need to install you can [click here](https://docs.docker.com/compose/install/) to check out how can you do that. After installed the only thing you need is export the variables that you like and configure the volume for persistent data, then run the compose as command available below:
+## Running Containers
+The only requirement to run this is having Docker Compose installed. Further information on the install process can be found in the [docs](https://docs.docker.com/compose/install/). After installed, the only thing you need to do is export any appropriate variables and configure the volume for persistent data, then run `docker-compose up -d`.
 
 ```console
-$ git clone https://github.com/pedrocesar-ti/internet-speedtest-docker.git
-$ cd internet-speedtest-docker
+$ git clone https://github.com/phikai/docker-internet-speedtest-dashboard
+$ cd docker-internet-speedtest-dashboard
 
 $ docker-compose up -d 
 ```
 
 ## Docker Compose
-As you probably know Docker Compose is a tool to let you running a multi-container application, so as I sad before I put together some contaiers to make everything work together. They are described below:
+Docker Compose is a tool to help orchestrate and run multi-container applications. It's used here to connect the requred Database, Dashboard and Speedtest Client containers to make everything work. They are described below:
 
-### InfluxDB (DB)
-InfluxDB is a database tool based on time-series, so every event is registrate with their timestamp. I decided to use InfluxDB at first because has great integration with Grafana and second I don't take cara about timestamp and how generate the graphs based on time.
-
-<p align="center"><img src="https://dl.dropboxusercontent.com/s/u8urqvu85ob8zdn/Screen%20Shot%202017-02-28%20at%2000.03.36.png"InfluxDB"></p>
+### InfluxDB
+InfluxDB is a database tool based on time-series, so every event is registered with their timestamp.
 
 This project uses the official InfluxDB image hosted in the Docker Hub Library.
 
-You can edit or remove the volumes section of the docker-compose.yml file to reflect where you want you persistent data to live, or you can remove it if you like.   If you remove the volume mount you will lose all of your data if the container is removed.
+You can edit or remove the volumes section of the docker-compose.yml file to reflect where you want you persistent data to live, or you can remove it if you like.   If you remove the volume mount you will lose all of your data if the container is removed. `INFLUXDB_DB` is **required** to be `speedtest` for associated scripts in other containers to work.
 
-```docker-compose.yml
+```
 services:
-  db:
+  influxdb:
     image: influxdb 
     container_name: influxdb
+    restart: unless-stopped
+    network_mode: 'bridge'
+    ports:
+      - '8086:8086'
+    environment:
+      - INFLUXDB_DB=speedtest
     volumes:
-      - "/data/influxdb/:/var/lib/influxdb"
+      - './influxdb:/var/lib/influxdb'
 ```
 
-You can customize some actions with variables listed below:
+### Chronograf
+Chronograf is a tool to create and manage dashboards and graphs; built by the same team who built InfluxDB. 
 
-| Variables  | Default | Function |
-|---------|--------|--------|
-| **INFLUXDB_ADMIN_USER** | admin | Set root user for the database. |
-| **INFLUXDB_ADMIN_PASSWORD** | password | Set the password for the root user. |
-| **INFLUXDB_DB** | speedtest | Create a database **speedtest** when container starts. |
+This project uses the official Chronograf image from the Docker Hub Library.
+
+```
+  chronograf:
+    image: chronograf 
+    container_name: chronograf
+    restart: unless-stopped
+    network_mode: 'bridge'
+    ports:
+      - '8888:8888'
+    environment:
+      - INFLUXDB_URL=http://db:8086
+    volumes:
+      - './chronograf:/var/lib/chronograf'
+    links:
+      - influxdb:db
+    depends_on:
+      - influxdb
+```
 
 
-### Grafana (Web)
-Grafana is a tool to create and manage dashboards and graphs. It's a really cool tool and as I said earlier has a perfect integration with InfluxDB.
+### SpeedTest
+This image was created to run a custom script that calls speedtest-cli to test your internet connection speed and post the data to the running InfluxDB instance. [SpeedTest CLI](https://github.com/sivel/speedtest-cli/) is a client for the popular [Speedtest](http://www.speedtest.net/) service. It tests your internet connectivity speed by sending requests to download and upload data from a geographically close testing server.
 
-When I started this project I used [tutumcloud/grafana](https://github.com/tutumcloud/grafana) image, however they stopped to update grafana image beacause the new version has a different way to be installed, so it's deprecated. So I used [grafana](https://hub.docker.com/r/grafana/grafana/) original image as a base system to generate my own image.
+This project uses a custom [Speedtest Container](https://github.com/phikai/docker-speedtest) available via the Docker Hub Library.
 
-You can also customize this image with few variables:
-
-| Variables  | Default | Function |
-|---------|--------|--------|
-| **GF_SERVER_ROOT** | http://localhost | Set URL to configure Grafana built-in web server. |
-| **GF_SECURITY_ADMIN_PASSWORD** | **Default without password.** | This is a password to access the Grafana Dashboard. |
-
-
-### SpeedTest (Testing)
-This image was created to run a script that calls speedtest-cli to test the internet connect and save data on InfluxDB. [SpeedTest](https://github.com/sivel/speedtest-cli/) is a tool written in Python and is used to test your Internet connection based on donwload and upload some content from servers configured previously.
+```
+  speedtest:
+    image: phikai/speedtest
+    container_name: speedtest
+    restart: unless-stopped
+    network_mode: 'bridge'
+    environment:
+      - TEST_INTERVAL=5
+    links:
+      - influxdb:db
+    depends_on:
+      - influxdb
+```
 
 The only variable to customize on this image is a variable to set the frequency that this script will run.
 
 | Variables  | Default | Function |
 |---------|--------|--------|
-| **TIME_INTERVAL** | 600 | Time (in sec.) to set how long will sleep the script until run again. |
+| **TIME_INTERVAL** | 5 | Time (in sec.) to set how long will sleep the script until run again. |
 
+---
 
-Repositories used to
----------------------------------
-
-* [influxdb](https://hub.docker.com/_/influxdb/) 
-* [Grafana](https://hub.docker.com/r/grafana/grafana/)
-* [tutumcloud/grafana](https://github.com/tutumcloud/grafana)
+### Credits
+* [Pedro Azevedo](https://github.com/pedrocesar-ti)
+* [InfluxDB](https://www.influxdata.com/) 
+* [Chronograf](https://www.influxdata.com/time-series-platform/chronograf/)
 * [SpeedTest](https://github.com/sivel/speedtest-cli/)
 
-Enjoy! :)
+---
+
+If this project has helped you in anyway, and you'd like to say thanks...
+
+[![Donate](https://img.shields.io/badge/Donate-SquareCash-brightgreen.svg)](https://cash.me/$phikai)
+[![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/15JCkpHhjjVmWYaTBc2fJn4tcKHEd194gY)](https://en.cryptobadges.io/donate/15JCkpHhjjVmWYaTBc2fJn4tcKHEd194gY)
+
+---
+
+# Disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
