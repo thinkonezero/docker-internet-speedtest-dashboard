@@ -16,6 +16,8 @@ $ cd docker-internet-speedtest-dashboard
 $ docker-compose up -d 
 ```
 
+Once the containers have come up, navigate to [http://localhost:8888/sources/0/dashboards/1](http://localhost:8888/sources/0/dashboards/1) and to view your Speedtest Dashboard.
+
 ## Docker Compose
 Docker Compose is a tool to help orchestrate and run multi-container applications. It's used here to connect the requred Database, Dashboard and Speedtest Client containers to make everything work. They are described below:
 
