@@ -1,4 +1,6 @@
 # Internet Speedtest Dashboard
+*PSA*: Project has moved to [gitlab](https://gitlab.com/phikai/docker-internet-speedtest-dashboard). This repo will remain on Github as a mirror.
+---
 
 This project is designed to provide you an easy dashboard for consistently monitoring the speed of your Internet connection. It won't help you diagnose any issues, or notify anyone of issues, it's purely designed to provide historical reporting. It was also built as a standalone piece to integrate with my [Docker based HTPC Standup](https://github.com/phikai/htpc-docker-standup).
 
