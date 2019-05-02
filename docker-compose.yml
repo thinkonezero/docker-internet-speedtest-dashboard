@@ -2,7 +2,7 @@
 version: '2'
 services:
   influxdb:
-    image: influxdb 
+    image: influxdb
     container_name: influxdb
     restart: unless-stopped
     network_mode: 'bridge'
@@ -14,18 +14,18 @@ services:
       - './influxdb:/var/lib/influxdb'
 
   chronograf:
-    image: chronograf 
+    image: chronograf
     container_name: chronograf
     restart: unless-stopped
     network_mode: 'bridge'
     ports:
       - '8888:8888'
     environment:
-      - INFLUXDB_URL=http://db:8086
+      - INFLUXDB_URL=http://influxdb:8086
     volumes:
       - './chronograf:/var/lib/chronograf'
     links:
-      - influxdb:db
+      - influxdb
     depends_on:
       - influxdb
 
@@ -37,6 +37,6 @@ services:
     environment:
       - TEST_INTERVAL=5
     links:
-      - influxdb:db
+      - influxdb
     depends_on:
       - influxdb

@@ -63,7 +63,7 @@ This project uses the official Chronograf image from the Docker Hub Library.
     volumes:
       - './chronograf:/var/lib/chronograf'
     links:
-      - influxdb:db
+      - influxdb
     depends_on:
       - influxdb
 ```
@@ -83,7 +83,7 @@ This project uses a custom [Speedtest Container](https://github.com/phikai/docke
     environment:
       - TEST_INTERVAL=5
     links:
-      - influxdb:db
+      - influxdb
     depends_on:
       - influxdb
 ```
