@@ -2,7 +2,7 @@
 version: '2'
 services:
   influxdb:
-    image: influxdb
+    image: influxdb:1.8.4
     container_name: influxdb
     restart: unless-stopped
     network_mode: 'bridge'
