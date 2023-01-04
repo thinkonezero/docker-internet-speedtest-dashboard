@@ -31,65 +31,17 @@ This project uses the official InfluxDB image hosted in the Docker Hub Library.
 
 You can edit or remove the volumes section of the docker-compose.yml file to reflect where you want you persistent data to live, or you can remove it if you like.   If you remove the volume mount you will lose all of your data if the container is removed. `INFLUXDB_DB` is **required** to be `speedtest` for associated scripts in other containers to work.
 
-```
-services:
-  influxdb:
-    image: influxdb 
-    container_name: influxdb
-    restart: unless-stopped
-    network_mode: 'bridge'
-    ports:
-      - '8086:8086'
-    environment:
-      - INFLUXDB_DB=speedtest
-    volumes:
-      - './influxdb:/var/lib/influxdb'
-```
-
 ### Chronograf
 
-Chronograf is a tool to create and manage dashboards and graphs; built by the same team who built InfluxDB. 
+Chronograf is a tool to create and manage dashboards and graphs; built by the same team who built InfluxDB.
 
 This project uses the official Chronograf image from the Docker Hub Library.
-
-```
-  chronograf:
-    image: chronograf 
-    container_name: chronograf
-    restart: unless-stopped
-    network_mode: 'bridge'
-    ports:
-      - '8888:8888'
-    environment:
-      - INFLUXDB_URL=http://db:8086
-    volumes:
-      - './chronograf:/var/lib/chronograf'
-    links:
-      - influxdb
-    depends_on:
-      - influxdb
-```
-
 
 ### SpeedTest
 
 This image was created to run a custom script that calls speedtest-cli to test your internet connection speed and post the data to the running InfluxDB instance. [SpeedTest CLI](https://github.com/sivel/speedtest-cli/) is a client for the popular [Speedtest](http://www.speedtest.net/) service. It tests your internet connectivity speed by sending requests to download and upload data from a geographically close testing server.
 
 This project uses a custom [Speedtest Container](https://github.com/phikai/docker-speedtest) available via the Docker Hub Library.
-
-```
-  speedtest:
-    image: phikai/speedtest
-    container_name: speedtest
-    restart: unless-stopped
-    network_mode: 'bridge'
-    environment:
-      - TEST_INTERVAL=5
-    links:
-      - influxdb
-    depends_on:
-      - influxdb
-```
 
 The only variable to customize on this image is a variable to set the frequency that this script will run.
 

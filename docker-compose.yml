@@ -57,10 +57,9 @@ services:
         max-file: '${LOG_FILE_NUM}'
         max-size: '${LOG_FILE_SIZE}'
     networks:
-      - web
       - internal
-    expose:
-      - 8888
+    ports:
+      - '${CHRONOGRAF_PORT}:8888'
     environment:
       - TZ=${TZ}
       - PUID=${PUID}
@@ -102,4 +101,3 @@ services:
 
 networks:
   internal:
-  web:
