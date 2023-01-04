@@ -1,6 +1,4 @@
 # Internet Speedtest Dashboard
-*PSA*: Project has moved to [gitlab](https://gitlab.com/phikai/docker-internet-speedtest-dashboard). This repo will remain on Github as a mirror.
----
 
 This project is designed to provide you an easy dashboard for consistently monitoring the speed of your Internet connection. It won't help you diagnose any issues, or notify anyone of issues, it's purely designed to provide historical reporting. It was also built as a standalone piece to integrate with my [Docker based HTPC Standup](https://github.com/phikai/htpc-docker-standup).
 
@@ -9,6 +7,7 @@ Huge thanks to [Pedro Azevedo](https://github.com/pedrocesar-ti) for his [Speedt
 ![Speedtest Dashboard](dashboard.png)
 
 ## Running Containers
+
 The only requirement to run this is having Docker Compose installed. Further information on the install process can be found in the [docs](https://docs.docker.com/compose/install/). After installed, the only thing you need to do is export any appropriate variables and configure the volume for persistent data, then run `docker-compose up -d`.
 
 ```console
@@ -21,9 +20,11 @@ $ docker-compose up -d
 Once the containers have come up, navigate to [http://localhost:8888/sources/0/dashboards/1](http://localhost:8888/sources/0/dashboards/1) to view your Speedtest Dashboard.
 
 ## Docker Compose
+
 Docker Compose is a tool to help orchestrate and run multi-container applications. It's used here to connect the requred Database, Dashboard and Speedtest Client containers to make everything work. They are described below:
 
 ### InfluxDB
+
 InfluxDB is a database tool based on time-series, so every event is registered with their timestamp.
 
 This project uses the official InfluxDB image hosted in the Docker Hub Library.
@@ -46,6 +47,7 @@ services:
 ```
 
 ### Chronograf
+
 Chronograf is a tool to create and manage dashboards and graphs; built by the same team who built InfluxDB. 
 
 This project uses the official Chronograf image from the Docker Hub Library.
@@ -70,6 +72,7 @@ This project uses the official Chronograf image from the Docker Hub Library.
 
 
 ### SpeedTest
+
 This image was created to run a custom script that calls speedtest-cli to test your internet connection speed and post the data to the running InfluxDB instance. [SpeedTest CLI](https://github.com/sivel/speedtest-cli/) is a client for the popular [Speedtest](http://www.speedtest.net/) service. It tests your internet connectivity speed by sending requests to download and upload data from a geographically close testing server.
 
 This project uses a custom [Speedtest Container](https://github.com/phikai/docker-speedtest) available via the Docker Hub Library.
@@ -90,13 +93,14 @@ This project uses a custom [Speedtest Container](https://github.com/phikai/docke
 
 The only variable to customize on this image is a variable to set the frequency that this script will run.
 
-| Variables  | Default | Function |
-|---------|--------|--------|
-| **TIME_INTERVAL** | 5 | Time (in sec.) to set how long will sleep the script until run again. |
+| Variables         | Default | Function                                                              |
+|-------------------|---------|-----------------------------------------------------------------------|
+| **TIME_INTERVAL** | 5       | Time (in sec.) to set how long will sleep the script until run again. |
 
 ---
 
 ### Credits
+
 * [Pedro Azevedo](https://github.com/pedrocesar-ti)
 * [InfluxDB](https://www.influxdata.com/) 
 * [Chronograf](https://www.influxdata.com/time-series-platform/chronograf/)
@@ -120,4 +124,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
